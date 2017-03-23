@@ -267,6 +267,154 @@ class Sheet:    #Each SHEET within a PDB object will be a Sheet object
         else:
             self.sense = int(TEXT[38:40].strip())
         
+        # ('') Registration. Atom name in current strand.
+        if TEXT[41:45].strip() == '':
+            self.curAtom = None
+        else:
+            self.curAtom = TEXT[41:45].strip()
+        
+        # ('') Registration. Residue name in current strand
+        if TEXT[45:48].strip() == '':
+            self.curResName = None
+        else:
+            self.curResName = TEXT[45:48].strip()
+            
+        # (A-Z) Registration. Chain identifier in current strand.
+        if TEXT[49:50].strip() == '':
+            self.curChainId = None
+        else:
+            self.curChainId = TEXT[49:50].strip()
+        
+        # (#) Registration. Residue sequence number in current strand.
+        if TEXT[50:54].strip() == '':
+            self.curSeqNum = None       #curSeqNum better than curSeqRes
+        else:
+            self.curSeqNum = int(TEXT[50:54].strip())
+        
+        # Registration. Insertion code in current strand.
+        if TEXT[54:55].strip() == '':
+            self.curICode = None
+        else:
+            self.curICode = TEXT[54:55].strip()
+        
+        # ('') Registration. Atom name in previous strand.
+        if TEXT[56:60].strip() == '':
+            self.prevAtom = None
+        else:
+            self.prevAtom = TEXT[56:60].strip()
+        
+        # ('') Registration. Residue name in previous strand.
+        if TEXT[60:63].strip() == '':
+            self.prevResName = None
+        else:
+            self.prevResName = TEXT[60:63].strip()
+            
+        # (A-Z) Registration. Chain identifier in previous strand.
+        if TEXT[64:65].strip() == '':
+            self.prevChainId = None
+        else:
+            self.prevChainId = TEXT[64:65].strip()
+        
+        # (#) Registration. Residue sequence number in previous strand.
+        if TEXT[65:69].strip() == '':
+            self.prevSeqNum = None       #curSeqNum better than curSeqRes
+        else:
+            self.prevSeqNum = int(TEXT[65:69].strip())
+        
+        # Registration. Insertion code in previous strand.
+        if TEXT[69:70].strip() == '':
+            self.prevICode = None
+        else:
+            self.prevICode = TEXT[69:70].strip()
+
+##############################################################################
+
+class Atom:    #Each ATOM within a PDB object will be a Atom object
+    def __init__(self, TEXT):
+        
+        # (#) Atom serial number.
+        if TEXT[6:11].strip() == '':
+            self.serNum = None
+        else:
+            self.serNum = int(TEXT[6:11].strip())
+        
+        # ('') Atom name.
+        if TEXT[12:16].strip() == '':
+            self.name = None
+        else:
+            self.name = TEXT[12:16].strip()
+        
+        # ('') Alternate location indicator. 
+        if TEXT[16:17].strip() == '':
+            self.altLoc = None
+        else:
+            self.altLoc = TEXT[16:17].strip()
+            
+        # ('') Residue name.
+        if TEXT[17:20].strip() == '':
+            self.resName = None
+        else:
+            self.resName = TEXT[17:20].strip()
+        
+        # Chain identifier.
+        if TEXT[21:22].strip() == '':
+            self.chainID = None
+        else:
+            self.chainID = TEXT[21:22].strip()
+        
+        # Residue sequence number.
+        if TEXT[22:26].strip() == '':
+            self.resSeqNum = None
+        else:
+            self.resSeqNum = int(TEXT[22:26].strip())
+            
+        # Code for insertion of residues.
+        if TEXT[26:27].strip() == '':
+            self.iCode = None
+        else:
+            self.iCode = TEXT[26:27].strip()
+            
+        # (#) Orthogonal coordinates for X in Angstroms.
+        if TEXT[30:38].strip() == '':
+            self.x = None
+        else:
+            self.x = float(TEXT[30:38].strip())
+            
+        # (#) Orthogonal coordinates for Y in Angstroms.
+        if TEXT[38:46].strip() == '':
+            self.y = None
+        else:
+            self.y = float(TEXT[38:46].strip())
+        
+        # (#) Orthogonal coordinates for Z in Angstroms.
+        if TEXT[46:54].strip() == '':
+            self.z = None
+        else:
+            self.z = float(TEXT[46:54].strip())
+            
+        # (#) Occupancy.
+        if TEXT[54:60].strip() == '':
+            self.occupancy = None
+        else:
+            self.occupancy = float(TEXT[54:60].strip())
+            
+        # (#) Temperature factor.
+        if TEXT[60:66].strip() == '':
+            self.tempFactor = None
+        else:
+            self.tempFactor = float(TEXT[60:66].strip())
+        
+        # (#) Element symbol, right-justified.
+        if TEXT[76:78].strip() == '':
+            self.element = None
+        else:
+            self.element = TEXT[76:78].strip()
+        
+        # (#) Charge on the atom.
+        if TEXT[78:80].strip() == '':
+            self.charge = None
+        else:
+            self.charge = float(TEXT[78:80].strip())
 
 ##############################################################################
 
@@ -1616,7 +1764,7 @@ def parsePDBfile(File):
                     PDB.MODEL[-1][1].append(line_number)
         
         elif RECORD == 'ATOM':#Mx1
-            TEXT = line[7:-1].strip()
+            TEXT = line
             if PDB.ATOM == None:
                 PDB.ATOM  = [[],[]]
                 PDB.ATOM[0].append(TEXT)
@@ -1730,10 +1878,16 @@ def parsePDBfile(File):
         for line in PDB.SHEET[0]:
             SHEET.append(Sheet(line))
         PDB.SHEET[0] = SHEET
-        for s in PDB.SHEET[0]:
-            print(s.strand, s.sheetID, s.numStrands, s.initResName, s.initChainID,
-                  s.initSeqNum, s.initICode, s.endResName, s.endChainID, 
-                  s.endSeqNum, s.endICode, s.sense)
+    
+    if PDB.ATOM == None:
+        pass
+    else:
+        ATOM = []
+        for line in PDB.ATOM[0]:
+            ATOM.append(Atom(line))
+        PDB.ATOM[0] = ATOM
+    
+    
     
     return(PDB)
 
