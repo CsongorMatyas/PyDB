@@ -108,6 +108,168 @@ class PDBfile: #PDF file class, each PDB file will be a PDB object
 
 ##############################################################################
 
+class Helix:    #Each HELIX within a PDB object will be a Helix object
+    def __init__(self, TEXT):
+        
+        # (#) Serial number of the helix. This starts at 1 and increases incrementally.
+        if TEXT[7:10].strip() == '':
+            self.serNum = None
+        else:
+            self.serNum = int(TEXT[7:10].strip())
+        
+        # ('H'#) Helix identifier. In addition to a serial number, each helix is given an alphanumeric character helix identifier.
+        if TEXT[11:14].strip() == '':
+            self.helixID = None
+        else:
+            self.helixID = TEXT[11:14].strip()
+        
+        # ('') Name of the initial residue. 
+        if TEXT[15:18].strip() == '':
+            self.initResName = None
+        else:
+            self.initResName = TEXT[15:18].strip()
+            
+        # (A-Z) Chain identifier for the chain containing this helix.
+        if TEXT[19:20].strip() == '':
+            self.initChainID = None
+        else:
+            self.initChainID = TEXT[19:20].strip()
+        
+        # (#) Sequence number of the initial residue. (SEQRES)
+        if TEXT[21:25].strip() == '':
+            self.initSeqNum = None
+        else:
+            self.initSeqNum = int(TEXT[21:25].strip())
+        
+        # Insertion code of the initial residue.
+        if TEXT[25:26].strip() == '':
+            self.initICode = None
+        else:
+            self.initICode = TEXT[25:26].strip()
+            
+        # ('') Name of the terminal residue of the helix.
+        if TEXT[27:30].strip() == '':
+            self.endResName = None
+        else:
+            self.endResName = TEXT[27:30].strip()
+            
+        # (A-Z) Chain identifier for the chain containing this helix. (WHY? Must be the same chain as initial, since the helix cannot be broken)
+        if TEXT[31:32].strip() == '':
+            self.endChainID = None
+        else:
+            self.endChainID = TEXT[31:32].strip()
+            
+        # (#) Sequence number of the terminal residue.
+        if TEXT[33:37].strip() == '':
+            self.endSeqNum = None
+        else:
+            self.endSeqNum = int(TEXT[33:37].strip())
+        
+        # Insertion code of the terminal residue.
+        if TEXT[37:38].strip() == '':
+            self.endICode = None
+        else:
+            self.endICode = TEXT[37:38].strip()
+            
+        # (#) Helix Class (1-10)
+        if TEXT[38:40].strip() == '':
+            self.helixClass = None
+        else:
+            self.helixClass = int(TEXT[38:40].strip())
+            
+        # ('') Comment about this helix.
+        if TEXT[40:70].strip() == '':
+            self.comment = None
+        else:
+            self.comment = TEXT[40:70].strip()
+        
+        # (#) Length of this helix.
+        if TEXT[71:76].strip() == '':
+            self.length = None
+        else:
+            self.length = int(TEXT[71:76].strip())
+
+##############################################################################
+
+class Sheet:    #Each SHEET within a PDB object will be a Sheet object
+    def __init__(self, TEXT):
+        
+        # (#) Strand number which starts at 1 for each strand within a sheet and increases by one.
+        if TEXT[7:10].strip() == '':
+            self.strand = None
+        else:
+            self.strand = int(TEXT[7:10].strip())
+        
+        # (A-Z) Sheet identifier.
+        if TEXT[11:14].strip() == '':
+            self.sheetID = None
+        else:
+            self.sheetID = TEXT[11:14].strip()
+        
+        # (#) Number of strands in sheet. 
+        if TEXT[14:16].strip() == '':
+            self.numStrands = None
+        else:
+            self.numStrands = int(TEXT[14:16].strip())
+            
+        # ('') Residue name of initial residue.
+        if TEXT[17:20].strip() == '':
+            self.initResName = None
+        else:
+            self.initResName = TEXT[17:20].strip()
+        
+        # (A-Z) Chain identifier of initial residue in strand.
+        if TEXT[21:22].strip() == '':
+            self.initChainID = None
+        else:
+            self.initChainID = TEXT[21:22].strip()
+        
+        # (#) Sequence number of initial residue in strand.
+        if TEXT[22:26].strip() == '':
+            self.initSeqNum = None
+        else:
+            self.initSeqNum = int(TEXT[22:26].strip())
+        
+        # Insertion code of initial residue in strand.
+        if TEXT[26:27].strip() == '':
+            self.initICode = None
+        else:
+            self.initICode = TEXT[26:27].strip()
+            
+        # ('') Residue name of terminal residue.
+        if TEXT[28:32].strip() == '':
+            self.endResName = None
+        else:
+            self.endResName = TEXT[28:31].strip()
+            
+        # (A-Z) Chain identifier of terminal residue.
+        if TEXT[32:33].strip() == '':
+            self.endChainID = None
+        else:
+            self.endChainID = TEXT[32:33].strip()
+        
+        # (#) Sequence number of terminal residue.
+        if TEXT[33:37].strip() == '':
+            self.endSeqNum = None
+        else:
+            self.endSeqNum = int(TEXT[33:37].strip())
+        
+        # Insertion code of the terminal residue.
+        if TEXT[37:38].strip() == '':
+            self.endICode = None
+        else:
+            self.endICode = TEXT[37:38].strip()
+            
+        # (#) Sense of strand with respect to previous strand in the sheet. 
+        # 0 if first strand, 1 if parallel, and -1 if anti-parallel.
+        if TEXT[38:40].strip() == '':
+            self.sense = None
+        else:
+            self.sense = int(TEXT[38:40].strip())
+        
+
+##############################################################################
+
 def readPDBfile(ID=None, Extension=None, Filename=None, Verbose=False,
                 IDUpper=False, IDLower=False, ExtUpper=False, ExtLower=False):
     #This code opens the file that has a given PDB ID . Extension, or Filename
@@ -1263,7 +1425,7 @@ def parsePDBfile(File):
                     PDB.FORMUL[-1][1].append(line_number)
         
         elif RECORD == 'HELIX':#Mx1
-            TEXT = line[7:-1].strip()
+            TEXT = line#[7:-1].strip()
             if PDB.HELIX == None:
                 PDB.HELIX  = [[],[]]
                 PDB.HELIX[0].append(TEXT)
@@ -1273,7 +1435,7 @@ def parsePDBfile(File):
                 PDB.HELIX[1].append(line_number)
         
         elif RECORD == 'SHEET':#Mx1
-            TEXT = line[7:-1].strip()
+            TEXT = line#[7:-1].strip()
             if PDB.SHEET == None:
                 PDB.SHEET  = [[],[]]
                 PDB.SHEET[0].append(TEXT)
@@ -1548,7 +1710,34 @@ def parsePDBfile(File):
                 warnings.warn('Unrecognized section found at line {}.'.format(line_number))
         
         line_number += 1
+        
+    #Any tests would go here that involve testing after reading and before analysing
+    
+    #Analysis starts here - This part is not complete yet
+    
+    if PDB.HELIX == None:
+        pass
+    else:
+        HELIX = []
+        for line in PDB.HELIX[0]:
+            HELIX.append(Helix(line))
+        PDB.HELIX[0] = HELIX
+
+    if PDB.SHEET == None:
+        pass
+    else:
+        SHEET = []
+        for line in PDB.SHEET[0]:
+            SHEET.append(Sheet(line))
+        PDB.SHEET[0] = SHEET
+        for s in PDB.SHEET[0]:
+            print(s.strand, s.sheetID, s.numStrands, s.initResName, s.initChainID,
+                  s.initSeqNum, s.initICode, s.endResName, s.endChainID, 
+                  s.endSeqNum, s.endICode, s.sense)
+    
     return(PDB)
+
+
 
 ##############################################################################
 
