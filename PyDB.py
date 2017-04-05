@@ -3,12 +3,15 @@
 __author__ = 'Csongor Mátyás'
 
 import sys, warnings
+from datetime import datetime
 
 ##############################################################################
 
 class PDBfile: #PDF file class, each PDB file will be a PDB object
     HEADER = None   #Mandatory 1x1 - First line of the entry, contains PDB ID code,
                                        #classification, and date of deposition.
+    depDate= None   #Date of deposition - from HEADER line 
+    idCode = None   #Unique PDB ID code - from HEADER line
     OBSLTE = None   #Optional  1xN - Statement that the entry has been removed from
                     #distribution and list of the ID code(s) which replaced it.
     TITLE  = None   #Mandatory 1xN - Description of the experiment represented in the entry.
@@ -16,6 +19,7 @@ class PDBfile: #PDF file class, each PDB file will be a PDB object
                     #macromolecular complexes.
     CAVEAT = None   #Optional  1xN - Severe error indicator.    
     COMPND = None   #Mandatory 1xN - Description of macromolecular contents of the entry.
+    CHAIN  = None   #                From COMPND, contains list of chains
     SOURCE = None   #Mandatory 1xN - Biological source of macromolecules in the entry.
     KEYWDS = None   #Mandatory 1xN - List of keywords describing the macromolecule.
     EXPDTA = None   #Mandatory 1xN - Experimental technique used for the structure determination.
@@ -68,9 +72,12 @@ class PDBfile: #PDF file class, each PDB file will be a PDB object
     REMARK_800=None #Optional  1xN - Important Sites
     REMARK_999=None #Optional  1xN - Sequence
     DBREF  = None   #Optional  Mx1 - Reference to the entry in the sequence database(s).
+    DBREF1 = None   #Optional  Mx1 - Same as DBREF but new version, goes with DBREF2
+    DBREF2 = None   #Optional  Mx1 - goes with DBREF1
     SEQADV = None   #Optional  Mx1 - Identification of conflicts between PDB
                     #and the named sequence database.
-    SEQRES = None   #Mandatory MxN - Primary sequence of backbone residues.
+    SEQRES = None   #Mandatory MxN - Primary sequence of backbone residues. As dictionary
+    SEQRESlen=None  #                Number of amino acids in each chain as dictionary
     MODRES = None   #Optional  Mx1 - Identification of modifications to standard residues.
     HET    = None   #Optional  Mx1 - Identification of non-standard groups (heterogens).
     HETNAM = None   #Optional  MxN - Compound name of the heterogens. (JUPAC?)
@@ -107,9 +114,224 @@ class PDBfile: #PDF file class, each PDB file will be a PDB object
                     #with a keyword other than the ones allowed by PDB file format.
 
 ##############################################################################
+class Dbref:    #Each DBREF or DBREF1/2 within a PDB object will be a Dbref object
+    def __init__(self, LIST):
+        if LIST[0] == 0:
+            TEXT = LIST[1]
+            
+            # ('') ID code of this entry.
+            if TEXT[7:11].strip() == '':
+                self.idCode = None
+            else:
+                self.idCode = TEXT[7:11].strip()
+        
+            # ('') Chain identifier.
+            if TEXT[12:13].strip() == '':
+                self.chainID = None
+            else:
+                self.chainID = TEXT[12:13].strip()
+            
+            # (#) Initial sequence number of the PDB sequence segment.
+            if TEXT[14:18].strip() == '':
+                self.seqBegin = None
+            else:
+                self.seqBegin = int(TEXT[14:18].strip())
+            
+            # ('') Initial insertion code of the PDB sequence segment.
+            if TEXT[18:19].strip() == '':
+                self.insertBegin = None
+            else:
+                self.insertBegin = TEXT[18:19].strip()
+            
+            # (#) Ending sequence number of the PDB sequence segment.
+            if TEXT[20:24].strip() == '':
+                self.seqEnd = None
+            else:
+                self.seqEnd = int(TEXT[20:24].strip())
+            
+            # ('') Ending insertion code of the PDB sequence segment.
+            if TEXT[24:25].strip() == '':
+                self.insertEnd = None
+            else:
+                self.insertEnd = TEXT[24:25].strip()
+            
+            # ('') Sequence database name.
+            if TEXT[26:32].strip() == '':
+                self.database = None
+            else:
+                self.database = TEXT[26:32].strip()
+            
+            # ('') Sequence database accession code.
+            if TEXT[33:41].strip() == '':
+                self.dbAccession = None
+            else:
+                self.dbAccession = TEXT[33:41].strip()
+            
+            # ('') Sequence database identification code.
+            if TEXT[42:54].strip() == '':
+                self.dbIdCode = None
+            else:
+                self.dbIdCode = TEXT[42:54].strip()
+            
+            # (#) Initial sequence number of the database seqment.
+            if TEXT[55:60].strip() == '':
+                self.dbseqBegin = None
+            else:
+                self.dbseqBegin = int(TEXT[55:60].strip())
+            
+            # ('') Insertion code of initial residue of the segment, if PDB is the reference.
+            if TEXT[60:61].strip() == '':
+                self.dbinsBeg = None
+            else:
+                self.dbinsBeg = TEXT[60:61].strip()
+            
+            # (#) Ending sequence number of the database segment.
+            if TEXT[62:67].strip() == '':
+                self.dbseqEnd = None
+            else:
+                self.dbseqEnd = int(TEXT[62:67].strip())
+            
+            # ('') Insertion code of the ending residue of the segment, if PDB is the reference.
+            if TEXT[67:68].strip() == '':
+                self.dbinsEnd = None
+            else:
+                self.dbinsEnd = TEXT[67:68].strip()
+                
+        elif LIST[0] == 1:
+            TEXT = LIST[1]
+            
+            # ('') ID code of this entry.
+            if TEXT[7:11].strip() == '':
+                self.idCode = None
+            else:
+                self.idCode = TEXT[7:11].strip()
+        
+            # ('') Chain identifier.
+            if TEXT[12:13].strip() == '':
+                self.chainID = None
+            else:
+                self.chainID = TEXT[12:13].strip()
+            
+            # (#) Initial sequence number of the PDB sequence segment.
+            if TEXT[14:18].strip() == '':
+                self.seqBegin = None
+            else:
+                self.seqBegin = int(TEXT[14:18].strip())
+            
+            # ('') Initial insertion code of the PDB sequence segment.
+            if TEXT[18:19].strip() == '':
+                self.insertBegin = None
+            else:
+                self.insertBegin = TEXT[18:19].strip()
+            
+            # (#) Ending sequence number of the PDB sequence segment.
+            if TEXT[20:24].strip() == '':
+                self.seqEnd = None
+            else:
+                self.seqEnd = int(TEXT[20:24].strip())
+            
+            # ('') Ending insertion code of the PDB sequence segment.
+            if TEXT[24:25].strip() == '':
+                self.insertEnd = None
+            else:
+                self.insertEnd = TEXT[24:25].strip()
+            
+            # ('') Sequence database name.
+            if TEXT[26:32].strip() == '':
+                self.database = None
+            else:
+                self.database = TEXT[26:32].strip()
+                        
+            # ('') Sequence database identification code.
+            if TEXT[47:67].strip() == '':
+                self.dbIdCode = None
+            else:
+                self.dbIdCode = TEXT[47:67].strip()
+            
+            TEXT = LIST[2]
+            
+            # ('') ID code of this entry.
+            if TEXT[7:11].strip() == self.idCode:
+                pass
+            else:
+                warnings.warn('idCode of DBREF1 is not equal to DBREF2 {} != {}.'.format(self.idCode, TEXT[7:11].strip()))
+        
+            # ('') Chain identifier.
+            if TEXT[12:13].strip() == self.chainID:
+                pass
+            else:
+                warnings.warn('chainID of DBREF1 is not equal to DBREF2 {} != {}.'.format(self.chainID, TEXT[12:13].strip()))
+            
+            # ('') Sequence database accession code.
+            if TEXT[18:40].strip() == '':
+                self.dbAccession = None
+            else:
+                self.dbAccession = TEXT[18:40].strip()
+            
+            # (#) Initial sequence number of the database seqment.
+            if TEXT[45:55].strip() == '':
+                self.dbseqBegin = None
+            else:
+                self.dbseqBegin = int(TEXT[45:55].strip())
+            
+            # ('') Insertion code of initial residue of the segment, if PDB is the reference.
+            self.dbinsBeg = None
 
+            # (#) Ending sequence number of the database segment.
+            if TEXT[57:67].strip() == '':
+                self.dbseqEnd = None
+            else:
+                self.dbseqEnd = int(TEXT[57:67].strip())
+            
+            # ('') Insertion code of the ending residue of the segment, if PDB is the reference.
+            self.dbinsEnd = None
+
+##############################################################################
+class Het:    #Each HET within a PDB object will be a Het object
+    def __init__(self, TEXT, line_number):
+        
+        # ('') Het identifier
+        if TEXT[7:10].strip() == '':
+            self.hetID = None
+        else:
+            self.hetID = TEXT[7:10].strip()
+        
+        # ('') Chain identifier
+        if TEXT[12:13].strip() == '':
+            self.chainID = None
+        else:
+            self.chainID = TEXT[12:13].strip()
+        
+        # (#) Sequence number 
+        if TEXT[13:17].strip() == '':
+            self.seqNum = None
+        else:
+            self.seqNum = int(TEXT[13:17].strip())
+            
+        # ('') Insertion code
+        if TEXT[17:18].strip() == '':
+            self.iCode = None
+        else:
+            self.iCode = TEXT[17:18].strip()
+        
+        # (#) Number of HETATM records for the group present in the entry
+        if TEXT[20:25].strip() == '':
+            self.numHetAtoms = None
+        else:
+            self.numHetAtoms = int(TEXT[20:25].strip())
+        
+        # ('') Text describing Het group
+        if TEXT[30:70].strip() == '':
+            self.text = None
+        else:
+            self.text = TEXT[30:70].strip()
+            
+        # (#) Line number
+        self.lineNum = line_number
+
+##############################################################################
 class Helix:    #Each HELIX within a PDB object will be a Helix object
-    def __init__(self, TEXT):
+    def __init__(self, TEXT, line_number):
         
         # (#) Serial number of the helix. This starts at 1 and increases incrementally.
         if TEXT[7:10].strip() == '':
@@ -188,11 +410,14 @@ class Helix:    #Each HELIX within a PDB object will be a Helix object
             self.length = None
         else:
             self.length = int(TEXT[71:76].strip())
+        
+        # (#) Line number
+        self.lineNum = line_number
 
 ##############################################################################
 
 class Sheet:    #Each SHEET within a PDB object will be a Sheet object
-    def __init__(self, TEXT):
+    def __init__(self, TEXT, line_number):
         
         # (#) Strand number which starts at 1 for each strand within a sheet and increases by one.
         if TEXT[7:10].strip() == '':
@@ -326,11 +551,14 @@ class Sheet:    #Each SHEET within a PDB object will be a Sheet object
             self.prevICode = None
         else:
             self.prevICode = TEXT[69:70].strip()
+        
+        # (#) Line number
+        self.lineNum = line_number
 
 ##############################################################################
 
 class Atom:    #Each ATOM within a PDB object will be a Atom object
-    def __init__(self, TEXT):
+    def __init__(self, TEXT, line_number):
         
         # (#) Atom serial number.
         if TEXT[6:11].strip() == '':
@@ -415,6 +643,9 @@ class Atom:    #Each ATOM within a PDB object will be a Atom object
             self.charge = None
         else:
             self.charge = float(TEXT[78:80].strip())
+        
+        # (#) Line number
+        self.lineNum = line_number
 
 ##############################################################################
 
@@ -491,9 +722,11 @@ def parsePDBfile(File):
             warnings.warn('Empty RECORD entry at line {}!!!'.format(line_number))
         
         elif RECORD == 'HEADER':#1x1
-            TEXT = line[7:-1].strip()
+            TEXT = line
             if PDB.HEADER == None:
-                PDB.HEADER = [TEXT, line_number]
+                PDB.HEADER = TEXT[10:50].strip()
+                PDB.depDate = datetime.strptime(TEXT[50:59].strip(), '%d-%b-%y')
+                PDB.idCode = TEXT[62:66].strip()
             else:
                 warnings.warn('Another HEADER section found at line {}!!!'.format(line_number))
                 sys.exit(0)
@@ -517,20 +750,20 @@ def parsePDBfile(File):
                     PDB.OBSLTE[-1][1].append(line_number)
         
         elif RECORD == 'TITLE':#1xN
-            TEXT = line[7:-1].strip()
+            TEXT = line
             if PDB.TITLE == None:
                 PDB.TITLE = [[[],[]]]
-                PDB.TITLE[0][0].append(TEXT)
+                PDB.TITLE[0][0].append(TEXT[10:80].strip())
                 PDB.TITLE[0][1].append(line_number)
                 PDB.TITLE[0][1].append(line_number)
             else:
                 if PDB.TITLE[-1][1][1] == line_number - 1:
-                    PDB.TITLE[-1][0].append(TEXT)
+                    PDB.TITLE[-1][0].append(TEXT[10:80].strip())
                     PDB.TITLE[-1][1][1] = line_number
                 else:
                     warnings.warn('Another TITLE section found at line {}.'.format(line_number))
                     PDB.TITLE.append([[],[]])
-                    PDB.TITLE[-1][0].append(TEXT)
+                    PDB.TITLE[-1][0].append(TEXT[10:80].strip())
                     PDB.TITLE[-1][1].append(line_number)
                     PDB.TITLE[-1][1].append(line_number)
         
@@ -556,143 +789,143 @@ def parsePDBfile(File):
             TEXT = line[7:-1].strip()
             if PDB.CAVEAT == None:
                 PDB.CAVEAT = [[[],[]]]
-                PDB.CAVEAT[0][0].append(TEXT)
+                PDB.CAVEAT[0][0].append(TEXT[19:79].strip())
                 PDB.CAVEAT[0][1].append(line_number)
                 PDB.CAVEAT[0][1].append(line_number)
             else:
                 if PDB.CAVEAT[-1][1][1] == line_number - 1:
-                    PDB.CAVEAT[-1][0].append(TEXT)
+                    PDB.CAVEAT[-1][0].append(TEXT[19:79].strip())
                     PDB.CAVEAT[-1][1][1] = line_number
                 else:
                     warnings.warn('Another CAVEAT section found at line {}.'.format(line_number))
                     PDB.CAVEAT.append([[],[]])
-                    PDB.CAVEAT[-1][0].append(TEXT)
+                    PDB.CAVEAT[-1][0].append(TEXT[19:79].strip())
                     PDB.CAVEAT[-1][1].append(line_number)
                     PDB.CAVEAT[-1][1].append(line_number)
         
         elif RECORD == 'COMPND':#1xN
-            TEXT = line[7:-1].strip()
+            TEXT = line
             if PDB.COMPND == None:
                 PDB.COMPND = [[[],[]]]
-                PDB.COMPND[0][0].append(TEXT)
+                PDB.COMPND[0][0].append(TEXT[10:80].strip())
                 PDB.COMPND[0][1].append(line_number)
                 PDB.COMPND[0][1].append(line_number)
             else:
                 if PDB.COMPND[-1][1][1] == line_number - 1:
-                    PDB.COMPND[-1][0].append(TEXT)
+                    PDB.COMPND[-1][0].append(TEXT[10:80].strip())
                     PDB.COMPND[-1][1][1] = line_number
                 else:
                     warnings.warn('Another COMPND section found at line {}.'.format(line_number))
                     PDB.COMPND.append([[],[]])
-                    PDB.COMPND[-1][0].append(TEXT)
+                    PDB.COMPND[-1][0].append(TEXT[10:80].strip())
                     PDB.COMPND[-1][1].append(line_number)
                     PDB.COMPND[-1][1].append(line_number)
         
         elif RECORD == 'SOURCE':#1xN
-            TEXT = line[7:-1].strip()
+            TEXT = line
             if PDB.SOURCE == None:
                 PDB.SOURCE = [[[],[]]]
-                PDB.SOURCE[0][0].append(TEXT)
+                PDB.SOURCE[0][0].append(TEXT[10:79].strip())
                 PDB.SOURCE[0][1].append(line_number)
                 PDB.SOURCE[0][1].append(line_number)
             else:
                 if PDB.SOURCE[-1][1][1] == line_number - 1:
-                    PDB.SOURCE[-1][0].append(TEXT)
+                    PDB.SOURCE[-1][0].append(TEXT[10:79].strip())
                     PDB.SOURCE[-1][1][1] = line_number
                 else:
                     warnings.warn('Another SOURCE section found at line {}.'.format(line_number))
                     PDB.SOURCE.append([[],[]])
-                    PDB.SOURCE[-1][0].append(TEXT)
+                    PDB.SOURCE[-1][0].append(TEXT[10:79].strip())
                     PDB.SOURCE[-1][1].append(line_number)
                     PDB.SOURCE[-1][1].append(line_number)
         
         elif RECORD == 'KEYWDS':#1xN
-            TEXT = line[7:-1].strip()
+            TEXT = line
             if PDB.KEYWDS == None:
                 PDB.KEYWDS = [[[],[]]]
-                PDB.KEYWDS[0][0].append(TEXT)
+                PDB.KEYWDS[0][0].append(TEXT[10:79].strip())
                 PDB.KEYWDS[0][1].append(line_number)
                 PDB.KEYWDS[0][1].append(line_number)
             else:
                 if PDB.KEYWDS[-1][1][1] == line_number - 1:
-                    PDB.KEYWDS[-1][0].append(TEXT)
+                    PDB.KEYWDS[-1][0].append(TEXT[10:79].strip())
                     PDB.KEYWDS[-1][1][1] = line_number
                 else:
                     warnings.warn('Another KEYWDS section found at line {}.'.format(line_number))
                     PDB.KEYWDS.append([[],[]])
-                    PDB.KEYWDS[-1][0].append(TEXT)
+                    PDB.KEYWDS[-1][0].append(TEXT[10:79].strip())
                     PDB.KEYWDS[-1][1].append(line_number)
                     PDB.KEYWDS[-1][1].append(line_number)
         
         elif RECORD == 'EXPDTA':#1xN
-            TEXT = line[7:-1].strip()
+            TEXT = line
             if PDB.EXPDTA == None:
                 PDB.EXPDTA = [[[],[]]]
-                PDB.EXPDTA[0][0].append(TEXT)
+                PDB.EXPDTA[0][0].append(TEXT[10:79].strip())
                 PDB.EXPDTA[0][1].append(line_number)
                 PDB.EXPDTA[0][1].append(line_number)
             else:
                 if PDB.EXPDTA[-1][1][1] == line_number - 1:
-                    PDB.EXPDTA[-1][0].append(TEXT)
+                    PDB.EXPDTA[-1][0].append(TEXT[10:79].strip())
                     PDB.EXPDTA[-1][1][1] = line_number
                 else:
                     warnings.warn('Another EXPDTA section found at line {}.'.format(line_number))
                     PDB.EXPDTA.append([[],[]])
-                    PDB.EXPDTA[-1][0].append(TEXT)
+                    PDB.EXPDTA[-1][0].append(TEXT[10:79].strip())
                     PDB.EXPDTA[-1][1].append(line_number)
                     PDB.EXPDTA[-1][1].append(line_number)
         
         elif RECORD == 'NUMMDL':#1xN
-            TEXT = line[7:-1].strip()
+            TEXT = line
             if PDB.NUMMDL == None:
                 PDB.NUMMDL = [[[],[]]]
-                PDB.NUMMDL[0][0].append(TEXT)
+                PDB.NUMMDL[0][0].append(int(TEXT[10:14].strip()))
                 PDB.NUMMDL[0][1].append(line_number)
                 PDB.NUMMDL[0][1].append(line_number)
             else:
                 if PDB.NUMMDL[-1][1][1] == line_number - 1:
-                    PDB.NUMMDL[-1][0].append(TEXT)
+                    PDB.NUMMDL[-1][0].append(int(TEXT[10:14].strip()))
                     PDB.NUMMDL[-1][1][1] = line_number
                 else:
                     warnings.warn('Another NUMMDL section found at line {}.'.format(line_number))
                     PDB.NUMMDL.append([[],[]])
-                    PDB.NUMMDL[-1][0].append(TEXT)
+                    PDB.NUMMDL[-1][0].append(int(TEXT[10:14].strip()))
                     PDB.NUMMDL[-1][1].append(line_number)
                     PDB.NUMMDL[-1][1].append(line_number)
         
         elif RECORD == 'MDLTYP':#1xN
-            TEXT = line[7:-1].strip()
+            TEXT = line
             if PDB.MDLTYP == None:
                 PDB.MDLTYP = [[[],[]]]
-                PDB.MDLTYP[0][0].append(TEXT)
+                PDB.MDLTYP[0][0].append(TEXT[10:79].strip())
                 PDB.MDLTYP[0][1].append(line_number)
                 PDB.MDLTYP[0][1].append(line_number)
             else:
                 if PDB.MDLTYP[-1][1][1] == line_number - 1:
-                    PDB.MDLTYP[-1][0].append(TEXT)
+                    PDB.MDLTYP[-1][0].append(TEXT[10:79].strip())
                     PDB.MDLTYP[-1][1][1] = line_number
                 else:
                     warnings.warn('Another MDLTYP section found at line {}.'.format(line_number))
                     PDB.MDLTYP.append([[],[]])
-                    PDB.MDLTYP[-1][0].append(TEXT)
+                    PDB.MDLTYP[-1][0].append(TEXT[10:79].strip())
                     PDB.MDLTYP[-1][1].append(line_number)
                     PDB.MDLTYP[-1][1].append(line_number)
         
         elif RECORD == 'AUTHOR':#1xN
-            TEXT = line[7:-1].strip()
+            TEXT = line
             if PDB.AUTHOR == None:
                 PDB.AUTHOR = [[[],[]]]
-                PDB.AUTHOR[0][0].append(TEXT)
+                PDB.AUTHOR[0][0].append(TEXT[10:79].strip())
                 PDB.AUTHOR[0][1].append(line_number)
                 PDB.AUTHOR[0][1].append(line_number)
             else:
                 if PDB.AUTHOR[-1][1][1] == line_number - 1:
-                    PDB.AUTHOR[-1][0].append(TEXT)
+                    PDB.AUTHOR[-1][0].append(TEXT[10:79].strip())
                     PDB.AUTHOR[-1][1][1] = line_number
                 else:
                     warnings.warn('Another AUTHOR section found at line {}.'.format(line_number))
                     PDB.AUTHOR.append([[],[]])
-                    PDB.AUTHOR[-1][0].append(TEXT)
+                    PDB.AUTHOR[-1][0].append(TEXT[10:79].strip())
                     PDB.AUTHOR[-1][1].append(line_number)
                     PDB.AUTHOR[-1][1].append(line_number)
         
@@ -725,20 +958,20 @@ def parsePDBfile(File):
                     PDB.SPRSDE[-1][1].append(line_number)
         
         elif RECORD == 'JRNL':#1xN
-            TEXT = line[7:-1].strip()
+            TEXT = line
             if PDB.JRNL == None:
                 PDB.JRNL = [[[],[]]]
-                PDB.JRNL[0][0].append(TEXT)
+                PDB.JRNL[0][0].append(TEXT[12:79].strip())
                 PDB.JRNL[0][1].append(line_number)
                 PDB.JRNL[0][1].append(line_number)
             else:
                 if PDB.JRNL[-1][1][1] == line_number - 1:
-                    PDB.JRNL[-1][0].append(TEXT)
+                    PDB.JRNL[-1][0].append(TEXT[12:79].strip())
                     PDB.JRNL[-1][1][1] = line_number
                 else:
                     warnings.warn('Another JRNL section found at line {}.'.format(line_number))
                     PDB.JRNL.append([[],[]])
-                    PDB.JRNL[-1][0].append(TEXT)
+                    PDB.JRNL[-1][0].append(TEXT[12:79].strip())
                     PDB.JRNL[-1][1].append(line_number)
                     PDB.JRNL[-1][1].append(line_number)
         
@@ -1465,7 +1698,7 @@ def parsePDBfile(File):
                         PDB.REMARK_999[-1][1].append(line_number)
                         
         elif RECORD == 'DBREF':#Mx1
-            TEXT = line[7:-1].strip()
+            TEXT = line
             if PDB.DBREF == None:
                 PDB.DBREF  = [[],[]]
                 PDB.DBREF[0].append(TEXT)
@@ -1473,6 +1706,26 @@ def parsePDBfile(File):
             else:
                 PDB.DBREF[0].append(TEXT)
                 PDB.DBREF[1].append(line_number)
+        
+        elif RECORD == 'DBREF1':#Mx1
+            TEXT = line
+            if PDB.DBREF1 == None:
+                PDB.DBREF1  = [[],[]]
+                PDB.DBREF1[0].append(TEXT)
+                PDB.DBREF1[1].append(line_number)
+            else:
+                PDB.DBREF1[0].append(TEXT)
+                PDB.DBREF1[1].append(line_number)
+        
+        elif RECORD == 'DBREF2':#Mx1
+            TEXT = line
+            if PDB.DBREF2 == None:
+                PDB.DBREF2  = [[],[]]
+                PDB.DBREF2[0].append(TEXT)
+                PDB.DBREF2[1].append(line_number)
+            else:
+                PDB.DBREF2[0].append(TEXT)
+                PDB.DBREF2[1].append(line_number)
         
         elif RECORD == 'SEQADV':#Mx1
             TEXT = line[7:-1].strip()
@@ -1485,7 +1738,7 @@ def parsePDBfile(File):
                 PDB.SEQADV[1].append(line_number)
         
         elif RECORD == 'SEQRES':#MxN
-            TEXT = line[7:-1].strip()
+            TEXT = line
             if PDB.SEQRES == None:
                 PDB.SEQRES = [[[],[]]]
                 PDB.SEQRES[0][0].append(TEXT)
@@ -1512,7 +1765,7 @@ def parsePDBfile(File):
                 PDB.MODRES[1].append(line_number)
         
         elif RECORD == 'HET':#Mx1
-            TEXT = line[7:-1].strip()
+            TEXT = line
             if PDB.HET == None:
                 PDB.HET  = [[],[]]
                 PDB.HET[0].append(TEXT)
@@ -1522,7 +1775,7 @@ def parsePDBfile(File):
                 PDB.HET[1].append(line_number)
         
         elif RECORD == 'HETNAM':#MxN
-            TEXT = line[7:-1].strip()
+            TEXT = line
             if PDB.HETNAM == None:
                 PDB.HETNAM = [[[],[]]]
                 PDB.HETNAM[0][0].append(TEXT)
@@ -1539,7 +1792,7 @@ def parsePDBfile(File):
                     PDB.HETNAM[-1][1].append(line_number)
         
         elif RECORD == 'HETSYN':#MxN
-            TEXT = line[7:-1].strip()
+            TEXT = line
             if PDB.HETSYN == None:
                 PDB.HETSYN = [[[],[]]]
                 PDB.HETSYN[0][0].append(TEXT)
@@ -1556,7 +1809,7 @@ def parsePDBfile(File):
                     PDB.HETSYN[-1][1].append(line_number)
         
         elif RECORD == 'FORMUL':#MxN
-            TEXT = line[7:-1].strip()
+            TEXT = line
             if PDB.FORMUL == None:
                 PDB.FORMUL = [[[],[]]]
                 PDB.FORMUL[0][0].append(TEXT)
@@ -1862,32 +2115,210 @@ def parsePDBfile(File):
     #Any tests would go here that involve testing after reading and before analysing
     
     #Analysis starts here - This part is not complete yet
+    if PDB.COMPND == None:
+        warnings.warn('COMPND entry is missing!')
+        sys.exit(0)
+    else:
+        PDB.COMPND = PDB.COMPND[0]
+    
+    for line in PDB.COMPND[0]:
+        if line.split()[0] == 'CHAIN:':
+            if PDB.CHAIN == None:
+                chain = []
+                for A in line[6:].split():
+                    chain.append(A[0])
+                PDB.CHAIN = chain
+            else:
+                chain = []
+                for A in line[6:].split():
+                    chain.append(A[0])
+                PDB.CHAIN.extend(chain)
+    
+    if PDB.DBREF == None:
+        pass
+    else:
+        DBREF = []
+        for line in PDB.DBREF[0]:
+            DBREF.append(Dbref([0, line, PDB.DBREF[1][PDB.DBREF[0].index(line)]]))
+        PDB.DBREF = DBREF
+
+    if PDB.DBREF1 == None and PDB.DBREF2 == None:
+        pass
+    else:
+        DBREF = []
+        for line1, line2 in zip(PDB.DBREF1[0], PDB.DBREF2[0]):
+            DBREF.append(Dbref([1, line1, line2, PDB.DBREF1[1][PDB.DBREF1[0].index(line1)], 
+                                PDB.DBREF2[1][PDB.DBREF2[0].index(line2)]]))
+        PDB.DBREF = DBREF
+        PDB.DBREF1= 'Done'
+        PDB.DBREF2= 'Done'
+    
+    if PDB.DBREF == None:
+        warnings.warn('DBREF entry is missing!')
+    
+    if len(PDB.DBREF) == len(PDB.CHAIN):
+        pass
+    else:
+        warnings.warn('Different number of DBREF entries than NUMMDL {} != {}.'.format(len(PDB.DBREF), PDB.NUMMDL))    
+    
+    if PDB.SEQRES == None:
+        warnings.warn('SEQRES entry is missing!')
+    else:
+        SEQRES = {}
+        SEQRESlen = {}
+        for seq in PDB.SEQRES[0][0]:
+            this_line = []
+            
+            if seq[19:22].strip() == '':
+                pass
+            else:
+                this_line.append(seq[19:22].strip())
+            
+            if seq[23:26].strip() == '':
+                pass
+            else:
+                this_line.append(seq[23:26].strip())
+            
+            if seq[27:30].strip() == '':
+                pass
+            else:
+                this_line.append(seq[27:30].strip())
+            
+            if seq[31:34].strip() == '':
+                pass
+            else:
+                this_line.append(seq[31:34].strip())
+            
+            if seq[35:38].strip() == '':
+                pass
+            else:
+                this_line.append(seq[35:38].strip())
+            
+            if seq[39:42].strip() == '':
+                pass
+            else:
+                this_line.append(seq[39:42].strip())
+            
+            if seq[43:46].strip() == '':
+                pass
+            else:
+                this_line.append(seq[43:46].strip())
+            
+            if seq[47:50].strip() == '':
+                pass
+            else:
+                this_line.append(seq[47:50].strip())
+            
+            if seq[51:54].strip() == '':
+                pass
+            else:
+                this_line.append(seq[51:54].strip())
+            
+            if seq[55:58].strip() == '':
+                pass
+            else:
+                this_line.append(seq[55:58].strip())
+            
+            if seq[59:62].strip() == '':
+                pass
+            else:
+                this_line.append(seq[59:62].strip())
+            
+            if seq[63:66].strip() == '':
+                pass
+            else:
+                this_line.append(seq[63:66].strip())
+            
+            if seq[67:70].strip() == '':
+                pass
+            else:
+                this_line.append(seq[67:70].strip())
+            
+            
+            if seq[11:12].strip() in SEQRES:
+                Value = SEQRES[seq[11:12].strip()]
+                Value.extend(this_line)
+                SEQRES[seq[11:12].strip()] = Value
+            else:
+                SEQRES[seq[11:12].strip()] = this_line
+                SEQRESlen[seq[11:12].strip()] = int(seq[13:17].strip())
+        
+        for key, value in SEQRES.items():
+            if len(value) == SEQRESlen[key]:
+                pass
+            else:
+                warnings.warn('Sequence length of chain {} is not equal the expected. {} != {}'.format(key, len(value), SEQRESlen[key]))
+        
+        PDB.SEQRES = SEQRES
+        PDB.SEQRESlen = SEQRESlen
+
+    if PDB.HET == None:
+        pass
+    else:
+        HET = []
+        for line in PDB.HET[0]:
+            HET.append(Het(line, PDB.HET[1][PDB.HET[0].index(line)]))
+        PDB.HET = HET
+    
+    if PDB.HETNAM == None:
+        pass
+    else:
+        PDB.HETNAM = PDB.HETNAM[0]
+        HETNAM = {}
+        for line in PDB.HETNAM[0]:
+            if line[11:14].strip() in HETNAM:
+                HETNAM[line[11:14].strip()] = HETNAM[line[11:14].strip()] + line[15:70].strip()
+            else:
+                HETNAM[line[11:14].strip()] = line[15:70].strip()
+        PDB.HETNAM = HETNAM
+    
+    if PDB.HETSYN == None:
+        pass
+    else:
+        PDB.HETSYN = PDB.HETSYN[0]
+        HETSYN = {}
+        for line in PDB.HETSYN[0]:
+            if line[11:14].strip() in HETSYN:
+                HETSYN[line[11:14].strip()] = HETSYN[line[11:14].strip()] + line[15:70].strip()
+            else:
+                HETSYN[line[11:14].strip()] = line[15:70].strip()
+        PDB.HETSYN = HETSYN
+    
+    if PDB.FORMUL == None:
+        pass
+    else:
+        PDB.FORMUL = PDB.FORMUL[0]
+        FORMUL = {}
+        for line in PDB.FORMUL[0]:
+            if line[12:15].strip() in FORMUL:
+                FORMUL[line[12:15].strip()] = FORMUL[line[12:15].strip()] + line[19:70].strip()
+            else:
+                FORMUL[line[12:15].strip()] = line[19:70].strip()
+        PDB.FORMUL = FORMUL
     
     if PDB.HELIX == None:
         pass
     else:
         HELIX = []
         for line in PDB.HELIX[0]:
-            HELIX.append(Helix(line))
-        PDB.HELIX[0] = HELIX
+            HELIX.append(Helix(line, PDB.HELIX[1][PDB.HELIX[0].index(line)]))
+        PDB.HELIX = HELIX
 
     if PDB.SHEET == None:
         pass
     else:
         SHEET = []
         for line in PDB.SHEET[0]:
-            SHEET.append(Sheet(line))
-        PDB.SHEET[0] = SHEET
+            SHEET.append(Sheet(line, PDB.SHEET[1][PDB.SHEET[0].index(line)]))
+        PDB.SHEET = SHEET
     
     if PDB.ATOM == None:
         pass
     else:
         ATOM = []
         for line in PDB.ATOM[0]:
-            ATOM.append(Atom(line))
-        PDB.ATOM[0] = ATOM
-    
-    
+            ATOM.append(Atom(line, PDB.ATOM[1][PDB.ATOM[0].index(line)]))
+        PDB.ATOM = ATOM
     
     return(PDB)
 
@@ -1897,39 +2328,15 @@ def parsePDBfile(File):
 
 if __name__ == '__main__':
     print('PyDB is a package that is designed to read PDB file format.')
-    File = readPDBfile(ID = '1a0k', Extension = 'pdb')
-    PDB = parsePDBfile(File)
-    #print(PDB.HEADER)
-    #print(PDB.TITLE )
-    #print(PDB.COMPND)
-    #print(PDB.SOURCE)
-    #print(PDB.KEYWDS)
-    #print(PDB.EXPDTA)
-    #print(PDB.NUMMDL)
-    #print(PDB.AUTHOR)
-    #print(PDB.REVDAT)
-    #print(PDB.JRNL  )
-    #print(PDB.REMARK_2)
-    #print(PDB.REMARK_3)
-    #print(PDB.DBREF )
-    #print(PDB.SEQRES)
-    #print(PDB.FORMUL)
-    #print(PDB.HELIX )
-    #print(PDB.SHEET )
-    #print(PDB.CISPEP)
-    #print(PDB.SITE  )
-    #print(PDB.CRYST1)
-    #print(PDB.ORIGX1)
-    #print(PDB.ORIGX2)
-    #print(PDB.ORIGX3)
-    #print(PDB.SCALE1)
-    #print(PDB.SCALE2)
-    #print(PDB.SCALE3)
-    #print(PDB.ATOM  )
-    #print(PDB.TER   )
-    #print(PDB.HETATM)
-    #print(PDB.MASTER)
-    #print(PDB.END   )
-    print(PDB.JUNK  )
+    File_1a0k = readPDBfile(ID = '1a0k', Extension = 'pdb')
+    PDB_1a0k = parsePDBfile(File_1a0k)
+    print(PDB_1a0k.JUNK)
+    File_1ao6 = readPDBfile(ID = '1ao6', Extension = 'pdb')
+    PDB_1ao6 = parsePDBfile(File_1ao6)
+    File_5b5t = readPDBfile(ID = '5b5t', Extension = 'pdb')
+    PDB_5b5t = parsePDBfile(File_5b5t)
+    print(PDB_1a0k.JUNK, PDB_1ao6.JUNK, PDB_5b5t.JUNK)
+
+    
     
     
