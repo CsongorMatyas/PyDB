@@ -1,10 +1,13 @@
 #!/usr/bin/env python
-#This is a package that is designed to read PDB file format.
+#This is a package that is designed to read PDB file format 
+#and convert it to a python object.
 __author__ = 'Csongor Mátyás'
 
 import sys, warnings
 from datetime import datetime
 
+##############################################################################
+#CLASSES######################################################################
 ##############################################################################
 
 class PDBfile: #PDF file class, each PDB file will be a PDB object
@@ -19,7 +22,7 @@ class PDBfile: #PDF file class, each PDB file will be a PDB object
                     #macromolecular complexes.
     CAVEAT = None   #Optional  1xN - Severe error indicator.    
     COMPND = None   #Mandatory 1xN - Description of macromolecular contents of the entry.
-    CHAIN  = None   #                From COMPND, contains list of chains
+    CHAINS = None   #                From COMPND, contains list of chains
     SOURCE = None   #Mandatory 1xN - Biological source of macromolecules in the entry.
     KEYWDS = None   #Mandatory 1xN - List of keywords describing the macromolecule.
     EXPDTA = None   #Mandatory 1xN - Experimental technique used for the structure determination.
@@ -556,6 +559,255 @@ class Sheet:    #Each SHEET within a PDB object will be a Sheet object
         self.lineNum = line_number
 
 ##############################################################################
+class SSbond:    #Each SSBOND within a PDB object will be an SSbond object
+    def __init__(self, TEXT, line_number):
+        
+        # (#) Serial number of the SSBOND.
+        if TEXT[7:10].strip() == '':
+            self.serNum = None
+        else:
+            self.serNum = int(TEXT[7:10].strip())
+        
+        # ('') Residue name.
+        if TEXT[11:14].strip() == '':
+            self.ResName1 = None
+        else:
+            self.ResName1 = TEXT[11:14].strip()
+        
+        # (A-Z) Chain identifier. 
+        if TEXT[15:16].strip() == '':
+            self.chainID1 = None
+        else:
+            self.chainID1 = TEXT[15:16].strip()
+            
+        # (#) Residue sequence number.
+        if TEXT[17:21].strip() == '':
+            self.seqNum1 = None
+        else:
+            self.seqNum1 = int(TEXT[17:21].strip())
+        
+        # Insertion code.
+        if TEXT[21:22].strip() == '':
+            self.icode1 = None
+        else:
+            self.icode1 = TEXT[21:22].strip()
+        
+        # ('') Second residue name.
+        if TEXT[25:28].strip() == '':
+            self.ResName2 = None
+        else:
+            self.ResName2 = TEXT[25:28].strip()
+        
+        # (A-Z) Second chain identifier. 
+        if TEXT[29:30].strip() == '':
+            self.chainID2 = None
+        else:
+            self.chainID2 = TEXT[29:30].strip()
+            
+        # (#) Second residue sequence number.
+        if TEXT[31:35].strip() == '':
+            self.seqNum2 = None
+        else:
+            self.seqNum2 = int(TEXT[31:35].strip())
+        
+        # Second insertion code.
+        if TEXT[35:36].strip() == '':
+            self.icode2 = None
+        else:
+            self.icode2 = TEXT[35:36].strip()
+            
+        # ('') Symmetry operator for residue 1.
+        if TEXT[59:65].strip() == '':
+            self.symOp1 = None
+        else:
+            self.symOp1 = TEXT[59:65].strip()
+            
+        # ('') Symmetry operator for residue 2.
+        if TEXT[66:72].strip() == '':
+            self.symOp2 = None
+        else:
+            self.symOp2 = TEXT[66:72].strip()
+        
+        # (#) Disulfide bond distance
+        if TEXT[73:78].strip() == '':
+            self.bondLen = None
+        else:
+            self.bondLen = float(TEXT[73:78].strip())
+        
+        # (#) Line number
+        self.lineNum = line_number
+
+##############################################################################
+class Link:    #Each LINK within a PDB object will be an Link object
+    def __init__(self, TEXT, line_number):
+        
+        # ('') Atom name.
+        if TEXT[12:16].strip() == '':
+            self.atomName1 = None
+        else:
+            self.atomName1 = TEXT[12:16].strip()
+        
+        # ('') Alternate location indicator.
+        if TEXT[16:17].strip() == '':
+            self.altLoc1 = None
+        else:
+            self.altLoc1 = TEXT[16:17].strip()
+        
+        # ('') Residue name.
+        if TEXT[17:20].strip() == '':
+            self.resName1 = None
+        else:
+            self.resName1 = TEXT[17:20].strip()
+        
+        # (A-Z) Chain identifier. 
+        if TEXT[21:22].strip() == '':
+            self.chainID1 = None
+        else:
+            self.chainID1 = TEXT[21:22].strip()
+            
+        # (#) Residue sequence number.
+        if TEXT[22:26].strip() == '':
+            self.seqNum1 = None
+        else:
+            self.seqNum1 = int(TEXT[22:26].strip())
+        
+        # Insertion code.
+        if TEXT[26:27].strip() == '':
+            self.icode1 = None
+        else:
+            self.icode1 = TEXT[26:27].strip()
+        
+        # ('') Second atom name.
+        if TEXT[42:46].strip() == '':
+            self.atomName2 = None
+        else:
+            self.atomName2 = TEXT[42:46].strip()
+        
+        # ('') Second alternate location indicator.
+        if TEXT[46:47].strip() == '':
+            self.altLoc2 = None
+        else:
+            self.altLoc2 = TEXT[46:47].strip()
+        
+        # ('') Second residue name.
+        if TEXT[47:50].strip() == '':
+            self.resName2 = None
+        else:
+            self.resName2 = TEXT[47:50].strip()
+        
+        # (A-Z) Second chain identifier. 
+        if TEXT[51:52].strip() == '':
+            self.chainID2 = None
+        else:
+            self.chainID2 = TEXT[51:52].strip()
+            
+        # (#) Second residue sequence number.
+        if TEXT[52:56].strip() == '':
+            self.seqNum2 = None
+        else:
+            self.seqNum2 = int(TEXT[52:56].strip())
+        
+        # Second insertion code.
+        if TEXT[56:57].strip() == '':
+            self.icode2 = None
+        else:
+            self.icode2 = TEXT[56:57].strip()
+        
+        # ('') Symmetry operator for residue 1.
+        if TEXT[59:65].strip() == '':
+            self.symOp1 = None
+        else:
+            self.symOp1 = TEXT[59:65].strip()
+            
+        # ('') Symmetry operator for residue 2.
+        if TEXT[66:72].strip() == '':
+            self.symOp2 = None
+        else:
+            self.symOp2 = TEXT[66:72].strip()
+        
+        # (#) Bond distance
+        if TEXT[73:78].strip() == '':
+            self.bondLen = None
+        else:
+            self.bondLen = float(TEXT[73:78].strip())
+        
+        # (#) Line number
+        self.lineNum = line_number
+
+##############################################################################
+class Cispep:    #Each CISPEP within a PDB object will be an Cispep object
+    def __init__(self, TEXT, line_number):
+        
+        # (#) Record serial number.
+        if TEXT[7:10].strip() == '':
+            self.serNum = None
+        else:
+            self.serNum = int(TEXT[7:10].strip())
+        
+        # ('') Residue name.
+        if TEXT[11:14].strip() == '':
+            self.resName1 = None
+        else:
+            self.resName1 = TEXT[11:14].strip()
+        
+        # (A-Z) Chain identifier. 
+        if TEXT[15:16].strip() == '':
+            self.chainID1 = None
+        else:
+            self.chainID1 = TEXT[15:16].strip()
+            
+        # (#) Residue sequence number.
+        if TEXT[17:21].strip() == '':
+            self.seqNum1 = None
+        else:
+            self.seqNum1 = int(TEXT[17:21].strip())
+        
+        # Insertion code.
+        if TEXT[21:22].strip() == '':
+            self.icode1 = None
+        else:
+            self.icode1 = TEXT[21:22].strip()
+        
+        # ('') Second residue name.
+        if TEXT[25:28].strip() == '':
+            self.resName2 = None
+        else:
+            self.resName2 = TEXT[25:28].strip()
+        
+        # (A-Z) Second chain identifier. 
+        if TEXT[29:30].strip() == '':
+            self.chainID2 = None
+        else:
+            self.chainID2 = TEXT[29:30].strip()
+            
+        # (#) Second residue sequence number.
+        if TEXT[31:35].strip() == '':
+            self.seqNum2 = None
+        else:
+            self.seqNum2 = int(TEXT[31:35].strip())
+        
+        # Second insertion code.
+        if TEXT[35:36].strip() == '':
+            self.icode2 = None
+        else:
+            self.icode2 = TEXT[35:36].strip()
+
+        # ('') Identifies the specific model.
+        if TEXT[43:46].strip() == '':
+            self.modNum = None
+        else:
+            self.modNum = int(TEXT[43:46].strip())
+        
+        # (#) Angle measurement in degrees.
+        if TEXT[53:59].strip() == '':
+            self.angle = None
+        else:
+            self.angle = float(TEXT[53:59].strip())
+        
+        # (#) Line number
+        self.lineNum = line_number
+
+##############################################################################
 
 class Atom:    #Each ATOM within a PDB object will be a Atom object
     def __init__(self, TEXT, line_number):
@@ -648,6 +900,134 @@ class Atom:    #Each ATOM within a PDB object will be a Atom object
         self.lineNum = line_number
 
 ##############################################################################
+class Ter:    #Each TER within a PDB object will be an Ter object - Terminal residue
+    def __init__(self, TEXT):
+        
+        # (#) Serial number.
+        if TEXT[7:11].strip() == '':
+            self.serNum = None
+        else:
+            self.serNum = int(TEXT[7:11].strip())
+        
+        # ('') Residue name.
+        if TEXT[17:20].strip() == '':
+            self.resName = None
+        else:
+            self.resName = TEXT[17:20].strip()
+        
+        # (A-Z) Chain identifier. 
+        if TEXT[21:22].strip() == '':
+            self.chainID = None
+        else:
+            self.chainID = TEXT[21:22].strip()
+            
+        # (#) Residue sequence number.
+        if TEXT[22:26].strip() == '':
+            self.seqNum = None
+        else:
+            self.seqNum = int(TEXT[22:26].strip())
+        
+        # Insertion code.
+        if TEXT[26:27].strip() == '':
+            self.icode = None
+        else:
+            self.icode = TEXT[26:27].strip()
+            
+##############################################################################
+
+class Hetatm:    #Each HETATM within a PDB object will be a Hetatm object
+    def __init__(self, TEXT, line_number):
+        
+        # (#) Atom serial number.
+        if TEXT[6:11].strip() == '':
+            self.serNum = None
+        else:
+            self.serNum = int(TEXT[6:11].strip())
+        
+        # ('') Atom name.
+        if TEXT[12:16].strip() == '':
+            self.name = None
+        else:
+            self.name = TEXT[12:16].strip()
+        
+        # ('') Alternate location indicator. 
+        if TEXT[16:17].strip() == '':
+            self.altLoc = None
+        else:
+            self.altLoc = TEXT[16:17].strip()
+            
+        # ('') Residue name.
+        if TEXT[17:20].strip() == '':
+            self.resName = None
+        else:
+            self.resName = TEXT[17:20].strip()
+        
+        # Chain identifier.
+        if TEXT[21:22].strip() == '':
+            self.chainID = None
+        else:
+            self.chainID = TEXT[21:22].strip()
+        
+        # Residue sequence number.
+        if TEXT[22:26].strip() == '':
+            self.resSeqNum = None
+        else:
+            self.resSeqNum = int(TEXT[22:26].strip())
+            
+        # Code for insertion of residues.
+        if TEXT[26:27].strip() == '':
+            self.iCode = None
+        else:
+            self.iCode = TEXT[26:27].strip()
+            
+        # (#) Orthogonal coordinates for X in Angstroms.
+        if TEXT[30:38].strip() == '':
+            self.x = None
+        else:
+            self.x = float(TEXT[30:38].strip())
+            
+        # (#) Orthogonal coordinates for Y in Angstroms.
+        if TEXT[38:46].strip() == '':
+            self.y = None
+        else:
+            self.y = float(TEXT[38:46].strip())
+        
+        # (#) Orthogonal coordinates for Z in Angstroms.
+        if TEXT[46:54].strip() == '':
+            self.z = None
+        else:
+            self.z = float(TEXT[46:54].strip())
+            
+        # (#) Occupancy.
+        if TEXT[54:60].strip() == '':
+            self.occupancy = None
+        else:
+            self.occupancy = float(TEXT[54:60].strip())
+            
+        # (#) Temperature factor.
+        if TEXT[60:66].strip() == '':
+            self.tempFactor = None
+        else:
+            self.tempFactor = float(TEXT[60:66].strip())
+        
+        # (#) Element symbol, right-justified.
+        if TEXT[76:78].strip() == '':
+            self.element = None
+        else:
+            self.element = TEXT[76:78].strip()
+        
+        # (#) Charge on the atom.
+        if TEXT[78:80].strip() == '':
+            self.charge = None
+        else:
+            self.charge = float(TEXT[78:80].strip())
+        
+        # (#) Line number
+        self.lineNum = line_number
+
+##############################################################################
+#FUNCTIONS####################################################################
+##############################################################################
 
 def readPDBfile(ID=None, Extension=None, Filename=None, Verbose=False,
                 IDUpper=False, IDLower=False, ExtUpper=False, ExtLower=False):
@@ -657,19 +1037,19 @@ def readPDBfile(ID=None, Extension=None, Filename=None, Verbose=False,
     #Verbose=True will print some more data
 
     if Filename == '':
-        print('Empty string was given as filename.')
+        warnings.warn('Empty string was given as filename.')
         sys.exit(0) #Check if string is empty
         
     if ID == '':
-        print('Empty string was given as PDB ID')
+        warnings.warn('Empty string was given as PDB ID')
         sys.exit(0) #Check if string is empty
 
     if IDUpper == True and IDLower == True:
-        print('Conflict between IDUpper and IDLower')
+        warnings.warn('Conflict between IDUpper and IDLower')
         sys.exit(0) #Check if both flags are raised
     
     if ExtUpper == True and ExtLower == True:
-        print('Conflict between ExtUpper and ExtLower')
+        warnings.warn('Conflict between ExtUpper and ExtLower')
         sys.exit(0) #Check if both flags are raised
 
     if IDUpper == True:
@@ -686,7 +1066,7 @@ def readPDBfile(ID=None, Extension=None, Filename=None, Verbose=False,
 
     if Filename == None:    #Check if filename was given
         if ID == None:      #Check if ID was given
-            print('There was no PDB ID or Filename given.')
+            warnings.warn('There was no PDB ID or Filename given.')
             sys.exit(0)
         else:
             if Extension == None:   #Check if Extension was given, could be empty
@@ -699,16 +1079,71 @@ def readPDBfile(ID=None, Extension=None, Filename=None, Verbose=False,
         ToOpen = str(Filename)
     
     if Verbose == True:
-        print('Opening {} file.'.format(ToOpen))
+        warnings.warn('Opening {} file.'.format(ToOpen))
 
-    File = open(ToOpen, 'r')
-    
+    with open(ToOpen, 'r') as f:
+        File = f.readlines()
+
     return(File)
+
+##############################################################################
+
+def define_sites(PDB_SITE):
+    SITE = {}        
+    counter = 0
+    for TEXT in PDB_SITE[0]:
+        if int(TEXT[7:10].strip()) == 1:
+            SITE[counter] = [TEXT[11:14].strip(), int(TEXT[15:17].strip()), []]
+            
+            residue = []
+            if TEXT[18:21].strip() != '':
+                residue.append([TEXT[18:21].strip(), TEXT[22:23].strip(),
+                                int(TEXT[23:27].strip()), TEXT[27:28].strip()])
+                                
+            if TEXT[29:32].strip() != '':
+                residue.append([TEXT[29:32].strip(), TEXT[33:34].strip(),
+                                int(TEXT[34:38].strip()), TEXT[38:39].strip()])
+                                
+            if TEXT[40:43].strip() != '':
+                residue.append([TEXT[40:43].strip(), TEXT[44:45].strip(),
+                                int(TEXT[45:49].strip()), TEXT[49:50].strip()])
+                                
+            if TEXT[51:54].strip() != '':
+                residue.append([TEXT[51:54].strip(), TEXT[55:56].strip(),
+                                int(TEXT[56:60].strip()), TEXT[60:61].strip()])
+            SITE[counter][2].extend(residue)
+            counter += 1
+        else:
+            residue = []
+            if TEXT[18:21].strip() != '':
+                residue.append([TEXT[18:21].strip(), TEXT[22:23].strip(),
+                                int(TEXT[23:27].strip()), TEXT[27:28].strip()])
+                                
+            if TEXT[29:32].strip() != '':
+                residue.append([TEXT[29:32].strip(), TEXT[33:34].strip(),
+                                int(TEXT[34:38].strip()), TEXT[38:39].strip()])
+                                
+            if TEXT[40:43].strip() != '':
+                residue.append([TEXT[40:43].strip(), TEXT[44:45].strip(),
+                                int(TEXT[45:49].strip()), TEXT[49:50].strip()])
+                                
+            if TEXT[51:54].strip() != '':
+                residue.append([TEXT[51:54].strip(), TEXT[55:56].strip(),
+                                int(TEXT[56:60].strip()), TEXT[60:61].strip()])
+            
+            SITE[counter-1][2].extend(residue)
+            
+    return(SITE)
     
 ##############################################################################
 
 def parsePDBfile(File):
     PDB = PDBfile()
+
+    if File == None:
+        warnings.warn('Input file variable is == None!')
+    elif File == '':
+        warnings.warn('Input file variable is empty!')
     
     line_number = 0
     
@@ -718,7 +1153,7 @@ def parsePDBfile(File):
         else:
             RECORD = line[0:7].strip()
             
-        if   RECORD == '':
+        if RECORD == '':
             warnings.warn('Empty RECORD entry at line {}!!!'.format(line_number))
         
         elif RECORD == 'HEADER':#1x1
@@ -1826,7 +2261,7 @@ def parsePDBfile(File):
                     PDB.FORMUL[-1][1].append(line_number)
         
         elif RECORD == 'HELIX':#Mx1
-            TEXT = line#[7:-1].strip()
+            TEXT = line
             if PDB.HELIX == None:
                 PDB.HELIX  = [[],[]]
                 PDB.HELIX[0].append(TEXT)
@@ -1836,7 +2271,7 @@ def parsePDBfile(File):
                 PDB.HELIX[1].append(line_number)
         
         elif RECORD == 'SHEET':#Mx1
-            TEXT = line#[7:-1].strip()
+            TEXT = line
             if PDB.SHEET == None:
                 PDB.SHEET  = [[],[]]
                 PDB.SHEET[0].append(TEXT)
@@ -1846,7 +2281,7 @@ def parsePDBfile(File):
                 PDB.SHEET[1].append(line_number)
         
         elif RECORD == 'SSBOND':#Mx1
-            TEXT = line[7:-1].strip()
+            TEXT = line
             if PDB.SSBOND == None:
                 PDB.SSBOND  = [[],[]]
                 PDB.SSBOND[0].append(TEXT)
@@ -1856,7 +2291,7 @@ def parsePDBfile(File):
                 PDB.SSBOND[1].append(line_number)
         
         elif RECORD == 'LINK':#Mx1
-            TEXT = line[7:-1].strip()
+            TEXT = line
             if PDB.LINK == None:
                 PDB.LINK  = [[],[]]
                 PDB.LINK[0].append(TEXT)
@@ -1866,7 +2301,7 @@ def parsePDBfile(File):
                 PDB.LINK[1].append(line_number)
         
         elif RECORD == 'CISPEP':#Mx1
-            TEXT = line[7:-1].strip()
+            TEXT = line
             if PDB.CISPEP == None:
                 PDB.CISPEP  = [[],[]]
                 PDB.CISPEP[0].append(TEXT)
@@ -1876,7 +2311,7 @@ def parsePDBfile(File):
                 PDB.CISPEP[1].append(line_number)
         
         elif RECORD == 'SITE':#MxN
-            TEXT = line[7:-1].strip()
+            TEXT = line
             if PDB.SITE == None:
                 PDB.SITE = [[[],[]]]
                 PDB.SITE[0][0].append(TEXT)
@@ -2037,7 +2472,7 @@ def parsePDBfile(File):
                 PDB.ANISOU[1].append(line_number)
         
         elif RECORD == 'TER':#Mx1
-            TEXT = line[7:-1].strip()
+            TEXT = line
             if PDB.TER == None:
                 PDB.TER  = [[],[]]
                 PDB.TER[0].append(TEXT)
@@ -2047,7 +2482,7 @@ def parsePDBfile(File):
                 PDB.TER[1].append(line_number)    
         
         elif RECORD == 'HETATM':#Mx1
-            TEXT = line[7:-1].strip()
+            TEXT = line
             if PDB.HETATM == None:
                 PDB.HETATM  = [[],[]]
                 PDB.HETATM[0].append(TEXT)
@@ -2123,16 +2558,16 @@ def parsePDBfile(File):
     
     for line in PDB.COMPND[0]:
         if line.split()[0] == 'CHAIN:':
-            if PDB.CHAIN == None:
+            if PDB.CHAINS == None:
                 chain = []
                 for A in line[6:].split():
                     chain.append(A[0])
-                PDB.CHAIN = chain
+                PDB.CHAINS = chain
             else:
                 chain = []
                 for A in line[6:].split():
                     chain.append(A[0])
-                PDB.CHAIN.extend(chain)
+                PDB.CHAINS.extend(chain)
     
     if PDB.DBREF == None:
         pass
@@ -2156,10 +2591,10 @@ def parsePDBfile(File):
     if PDB.DBREF == None:
         warnings.warn('DBREF entry is missing!')
     
-    if len(PDB.DBREF) == len(PDB.CHAIN):
+    if len(PDB.DBREF) == len(PDB.CHAINS):
         pass
     else:
-        warnings.warn('Different number of DBREF entries than NUMMDL {} != {}.'.format(len(PDB.DBREF), PDB.NUMMDL))    
+        warnings.warn('Different number of DBREF entries than COMPND CHAIN {} != {}.'.format(len(PDB.DBREF), PDB.NUMMDL))    
     
     if PDB.SEQRES == None:
         warnings.warn('SEQRES entry is missing!')
@@ -2312,18 +2747,68 @@ def parsePDBfile(File):
             SHEET.append(Sheet(line, PDB.SHEET[1][PDB.SHEET[0].index(line)]))
         PDB.SHEET = SHEET
     
-    if PDB.ATOM == None:
+    if PDB.SSBOND == None:
         pass
+    else:
+        SSBOND = []
+        for line in PDB.SSBOND[0]:
+            SSBOND.append(SSbond(line, PDB.SSBOND[1][PDB.SSBOND[0].index(line)]))
+        PDB.SSBOND = SSBOND
+    
+    if PDB.LINK == None:
+        pass
+    else:
+        LINK = []
+        for line in PDB.LINK[0]:
+            LINK.append(Link(line, PDB.LINK[1][PDB.LINK[0].index(line)]))
+        PDB.LINK = LINK
+    
+    if PDB.CISPEP == None:
+        pass
+    else:
+        CISPEP = []
+        for line in PDB.CISPEP[0]:
+            CISPEP.append(Cispep(line, PDB.CISPEP[1][PDB.CISPEP[0].index(line)]))
+        PDB.CISPEP = CISPEP
+    
+    if PDB.SITE == None:
+        pass
+    else:
+        PDB.SITE = define_sites(PDB.SITE[0])
+    
+    if PDB.ATOM == None:
+        warnings.warn('ATOM section is missing!')
+        sys.exit(0)
     else:
         ATOM = []
         for line in PDB.ATOM[0]:
             ATOM.append(Atom(line, PDB.ATOM[1][PDB.ATOM[0].index(line)]))
         PDB.ATOM = ATOM
+
+    if PDB.TER == None:
+        warnings.warn('TER section is missing!')
+        sys.exit(0)
+    else:
+        TER = []
+        for line in PDB.TER[0]:
+            TER.append(Ter(line))
+        PDB.TER = TER
     
+    if PDB.HETATM == None:
+        #warnings.warn('HETATM section is missing!')
+        pass
+    else:
+        HETATM = []
+        for line in PDB.HETATM[0]:
+            HETATM.append(Hetatm(line, PDB.HETATM[1][PDB.HETATM[0].index(line)]))
+        PDB.HETATM = HETATM
+
     return(PDB)
 
 
 
+##############################################################################
+#MAIN#########################################################################
 ##############################################################################
 
 if __name__ == '__main__':
@@ -2331,12 +2816,13 @@ if __name__ == '__main__':
     File_1a0k = readPDBfile(ID = '1a0k', Extension = 'pdb')
     PDB_1a0k = parsePDBfile(File_1a0k)
     print(PDB_1a0k.JUNK)
+#    '''
     File_1ao6 = readPDBfile(ID = '1ao6', Extension = 'pdb')
     PDB_1ao6 = parsePDBfile(File_1ao6)
     File_5b5t = readPDBfile(ID = '5b5t', Extension = 'pdb')
     PDB_5b5t = parsePDBfile(File_5b5t)
     print(PDB_1a0k.JUNK, PDB_1ao6.JUNK, PDB_5b5t.JUNK)
-
+#    '''
     
     
     
