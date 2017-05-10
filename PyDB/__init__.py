@@ -14,3 +14,5 @@ from PyDB.Cispep 		import Cispep
 from PyDB.Atom 			import Atom
 from PyDB.Ter 			import Ter
 from PyDB.Hetatm 		import Hetatm
+from PyDB.translate3to1 import translate3to1
+from PyDB.translate1to3 import translate1to3

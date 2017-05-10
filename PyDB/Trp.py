@@ -1,0 +1,26 @@
+class Trp:    #Class 
+    def __init__(self):
+    	self.H    = None
+    	self.N    = None
+    	self.CA   = None
+    	self.HA   = None
+    	self.C    = None
+    	self.O    = None
+    	self.CB   = None
+    	self.HB2  = None
+    	self.HB3  = None
+        self.CG   = None
+        self.CD1  = None
+        self.HD1  = None
+        self.CD2  = None
+        self.NE1  = None
+        self.HE1  = None
+        self.CE2  = None
+        self.CE3  = None
+        self.HE3  = None
+        self.CZ2  = None
+        self.HZ2  = None
+        self.CZ3  = None
+        self.HZ3  = None
+        self.CH2  = None
+        self.HH2  = None

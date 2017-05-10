@@ -1,0 +1,26 @@
+class Arg:    #Class 
+    def __init__(self):
+    	self.H    = None
+    	self.N    = None
+    	self.CA   = None
+    	self.HA   = None
+    	self.C    = None
+    	self.O    = None
+    	self.CB   = None
+    	self.HB2  = None
+    	self.HB3  = None
+        self.CG   = None
+        self.HG2  = None
+        self.HG3  = None
+        self.CD   = None
+        self.HD2  = None
+        self.HD3  = None
+        self.NE   = None
+        self.HE   = None
+        self.CZ   = None
+        self.NH1  = None
+        self.HH11 = None
+        self.HH12 = None
+        self.NH2  = None
+        self.HH21 = None
+        self.HH22 = None

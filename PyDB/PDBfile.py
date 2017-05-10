@@ -6,8 +6,10 @@ from PyDB.readFromFile  import readFromFile
 from PyDB.readFromUrl   import readFromUrl
 from PyDB.parsePDB      import parsePDB, parse1xN, parse1x1, parseMx1, parseMxN
 from PyDB.processPDB    import processPDB, processPDB_SITE
+from PyDB.translate3to1 import translate3to1
+from PyDB.translate1to3 import translate1to3
 
-class PDBfile(): #PDF file class, each PDB file will be a PDB object
+class PDBfile(): #PDB file class, each PDB file will be a PDB object
     def __init__(self, ID = None, Url = None, File = None):
         self.HEADER = None   #Mandatory 1x1 - First line of the entry, contains PDB ID code,
                                            #classification, and date of deposition.
